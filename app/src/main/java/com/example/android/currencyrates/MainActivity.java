@@ -36,9 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         getCurrencyConvertion();
 
-        mAdapter = new CustomAdapter(NUM_ITEMS,currencyNameList,valueList);
 
-        mRecyclerView.setAdapter(mAdapter);
 
     }
 
@@ -50,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public ArrayList<String> getValue(String response) throws JSONException{
-        ArrayList<String> answer = null;
-        JSONObject object = null;
+        ArrayList<String> answer = new ArrayList<>();
+        JSONObject object;
         object = new JSONObject(response);
         JSONObject names = object.getJSONObject("rates");
         String aud = names.getString("AUD");
@@ -124,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public ArrayList<String> getCurrencyName(String str){
-        ArrayList<String> list = null;
+    public ArrayList<String> getCurrencyName(){
+        ArrayList<String> list = new ArrayList<>();
 
         list.add("AUD");
         list.add("BGN");
@@ -169,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
 
             mResponse = s;
 
-            currencyNameList = getCurrencyName(s);
+            currencyNameList = getCurrencyName();
             valueList = null;
             try {
                 valueList = getValue(s);
@@ -177,6 +175,9 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            mAdapter = new CustomAdapter(NUM_ITEMS,currencyNameList,valueList);
+
+            mRecyclerView.setAdapter(mAdapter);
 
         }
 
