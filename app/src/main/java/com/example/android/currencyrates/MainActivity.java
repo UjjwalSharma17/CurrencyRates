@@ -20,10 +20,15 @@ public class MainActivity extends AppCompatActivity {
     private CustomAdapter mAdapter;
     String mResponse;
 
+    ArrayList<String> currencyNameList;
+    ArrayList<String> valueList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.rv_currency);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
 
@@ -31,21 +36,20 @@ public class MainActivity extends AppCompatActivity {
 
         getCurrencyConvertion();
 
+        mAdapter = new CustomAdapter(NUM_ITEMS,currencyNameList,valueList);
+
+        mRecyclerView.setAdapter(mAdapter);
+
     }
 
     public void getCurrencyConvertion(){
 
         URL url = NetworkUtils.buildUrl();
-        try {
-            mResponse = NetworkUtils.getResponseFromHttpUrl(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         new CustomAsyncTask().execute(url);
     }
 
-    public ArrayList<String> getValue(String response) throws JSONException {
+    public ArrayList<String> getValue(String response) throws JSONException{
         ArrayList<String> answer = null;
         JSONObject object = null;
         object = new JSONObject(response);
@@ -165,19 +169,15 @@ public class MainActivity extends AppCompatActivity {
 
             mResponse = s;
 
-            ArrayList<String> currencyNameList = getCurrencyName(s);
-            ArrayList<String> valueList = null;
+            currencyNameList = getCurrencyName(s);
+            valueList = null;
             try {
                 valueList = getValue(s);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            mRecyclerView = (RecyclerView) findViewById(R.id.rv_currency);
 
-            mAdapter = new CustomAdapter(NUM_ITEMS,currencyNameList,valueList);
-
-            mRecyclerView.setAdapter(mAdapter);
         }
 
         @Override
