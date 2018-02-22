@@ -15,11 +15,19 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    final static String MY_URL = "https://api.fixer.io/latest?base=USD";
+    final static String MY_URL = "https://api.fixer.io/latest";
 
-    public static URL buildUrl(){
+    public static URL buildUrl(String base){
 
-        Uri uri = Uri.parse(MY_URL).buildUpon().build();
+        Uri uri;
+
+        if(base == ""){
+            uri = Uri.parse(MY_URL).buildUpon().build();
+        }else{
+            uri = Uri.parse(MY_URL).buildUpon().appendQueryParameter("base", base).build();
+        }
+
+
 
         URL url = null;
         try{

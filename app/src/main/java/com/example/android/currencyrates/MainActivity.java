@@ -5,6 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private CustomAdapter mAdapter;
     String mResponse;
 
+    ProgressBar pb;
+
     ArrayList<String> currencyNameList;
     ArrayList<String> valueList;
 
@@ -28,26 +34,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        pb = (ProgressBar) findViewById(R.id.progress_bar);
+
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_currency);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
 
         mRecyclerView.setLayoutManager(llm);
 
-        getCurrencyConvertion();
+        getCurrencyConvertion("USD");
 
 
 
     }
 
-    public void getCurrencyConvertion(){
+    public void getCurrencyConvertion(String base){
 
-        URL url = NetworkUtils.buildUrl();
+        URL url = NetworkUtils.buildUrl(base);
 
         new CustomAsyncTask().execute(url);
     }
 
-    public ArrayList<String> getValue(String response) throws JSONException{
+    public ArrayList<String> getValue(String response, String base) throws JSONException{
         ArrayList<String> answer = new ArrayList<>();
         JSONObject object;
         object = new JSONObject(response);
@@ -60,7 +68,10 @@ public class MainActivity extends AppCompatActivity {
         String cny = names.getString("CNY");
         String czk = names.getString("CZK");
         String dkk = names.getString("DKK");
-        String eur = names.getString("EUR");
+        String eur = "1";
+        if(base.equals("USD")) {
+            eur = names.getString("EUR");
+        }
         String gbp = names.getString("GBP");
         String hkd = names.getString("HKD");
         String hrk = names.getString("HRK");
@@ -163,14 +174,36 @@ public class MainActivity extends AppCompatActivity {
     public class CustomAsyncTask extends AsyncTask<URL, Void, String>{
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            pb.setVisibility(View.VISIBLE);
+        }
+
+        String getBase(String response) throws JSONException {
+            JSONObject object = new JSONObject(response);
+            String answer = object.getString("base");
+            return answer;
+        }
+
+        @Override
         protected void onPostExecute(String s) {
 
+            pb.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
             mResponse = s;
+
+            String base = "USD";
+            try {
+                base = getBase(s);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
             currencyNameList = getCurrencyName();
             valueList = null;
             try {
-                valueList = getValue(s);
+                valueList = getValue(s,base);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -194,4 +227,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.first_menu_item){
+            getCurrencyConvertion("USD");
+        }else if(item.getItemId() == R.id.second_menu_item){
+            getCurrencyConvertion("");
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
